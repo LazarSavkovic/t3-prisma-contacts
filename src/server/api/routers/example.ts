@@ -1,0 +1,29 @@
+import { z } from "zod";
+import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+
+export const exampleRouter = createTRPCRouter({
+  hello: publicProcedure
+    .input(z.object({ text: z.string() }))
+    .query(({ input }) => {
+      return {
+        greeting: `Hello ${input.text}`,
+      };
+    }),
+  getAll: publicProcedure.query(({ ctx }) => {
+    return ctx.prisma.contact.findMany();
+  }),
+  create: publicProcedure
+    .input(z.object({
+      name: z.string(),
+      email: z.string(),
+      message: z.string(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const contact = await ctx.prisma.contact.create({
+        data: input
+      })
+      return {
+        contact
+      };
+    })
+});
